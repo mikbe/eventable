@@ -7,11 +7,9 @@ Gem::Specification.new do |s|
   s.version     = Eventable::VERSION
   s.authors     = ["Mike Bethany"]
   s.email       = ["mikbe.tk@gmail.com"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
-
-  s.rubyforge_project = "eventable"
+  s.homepage    = "http://mikbe.tk"
+  s.summary     = %q{An incredibly simple event mixin module.}
+  s.description = %q{Provides a simple, easy to use and understand event model. Other's did way too much for my needs, I just wanted a simple way to add, listen, and fire events in a class.}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

@@ -46,7 +46,7 @@ module Eventable
 
   # Allows objects to stop listening too
   def unregister_for_event(event_name, &callback)
-    return unless @events || @events[event_name]
+    return unless @events && @events[event_name]
     @events[event_name].delete(callback)
   end
   

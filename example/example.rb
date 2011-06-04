@@ -52,7 +52,9 @@ class ThingTwo
 end
 
 # Now show it running
-t2 = ThingTwo.new(ThingOne.new)
+t1 = ThingOne.new
+t2 = ThingTwo.new(t1)
+
 (1..3).each do |index|
   t2.do_somestuff(index)
   puts "[#{index}] did some stuff, sleeping"

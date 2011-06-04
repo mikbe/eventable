@@ -13,6 +13,8 @@ module Eventable
     # method signiture just to demonstrate how 
     # a callback should look but I just use hashes
     def event(event_name)
+      # is this wrong?
+      # this is also why I need tests...
       @@events ||= []
       @@events << event_name
     end
@@ -26,7 +28,7 @@ module Eventable
 
   # Does it make sense to bubble down the event list?
   def events
-    @@events
+    self.class.events
   end
 
   # When the event happens the class where it happens runs this

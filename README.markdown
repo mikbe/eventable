@@ -119,6 +119,6 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
-**2011.06.04**
-Ver: 0.0.1.alpha
-Just wrote it as a proof of concept.
+**2011.06.04**  
+Ver: 0.0.1.alpha  
+Just wrote it as a proof of concept.  

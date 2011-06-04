@@ -37,14 +37,14 @@ module Eventable
     end
   end
 
-  #  for notification of an event
+  # Allows an object to listen for an event and have a callback run when it happens
   def register_for_event(event_name, &callback)
     @events ||= {}
     @events[event_name] ||= []
     @events[event_name] << callback
   end
 
-  # Allows objects to register for notification of an event
+  # Allows objects to stop listening too
   def unregister_for_event(event_name, &callback)
     return unless @events || @events[event_name]
     @events[event_name].delete(callback)

@@ -5,10 +5,9 @@ class ThingOne
   include Eventable
   event :stuff_happens
   
-  def doing
+  def do_event
     fire_event(:stuff_happens, {:some_value => rand(1000)})
   end
-  
 end
 
 class ThingTwo
@@ -20,7 +19,7 @@ class ThingTwo
   end
 
   def do_somestuff
-    @some_thing.doing
+    @some_thing.do_event
   end
   
   def stuff_happened(stuff)

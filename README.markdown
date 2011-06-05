@@ -53,6 +53,9 @@ This example shows the basics of using Eventable to add an event to a class and 
 
     # Wait just to be sure you see it happen
     sleep(1)
+
+    => firing :stuff_happens
+    => stuff happened callback: 575
     
 This example shows you how you might actually use it in a multi-threaded environment but is a lot harder to read because of all the debug code:
 
@@ -131,6 +134,7 @@ This example shows you how you might actually use it in a multi-threaded environ
     end
 
     puts "all done"
+
 
 
 ##Version History##

@@ -1,65 +1,76 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), "/../lib"))
 require 'eventable'
 
-class ThingOne
+class EventedClass
   include Eventable
   event :stuff_happens
-  
-  def doing(parent_id)
+  event :other_stuff_happens
+
+  def make_stuff_happen(parent_id)
     # You handle concurrency however you want, threads or fibers, up to you.
     Thread.new{
+      puts "firing :stuff_happens"
       fire_event(:stuff_happens, {:parent_id=>parent_id, :some_value => rand(1000)})
     }
   end
-  
+
+  def start_other_stuff_happening
+    Thread.new {
+      5.times do 
+        sleep(rand(1)+2)
+        puts "firing :other_stuff_happens"
+        fire_event(:other_stuff_happens)
+      end
+    }
+  end
+
 end
 
-class ThingTwo
-  
-  # Dependency injection works fine
+class ListenerClass
+
   def initialize(some_object)
     @some_thing = some_object
-    
-    # With return data
-    @some_thing.register_for_event(:stuff_happens) {|return_data| stuff_happened(*return_data)}
-    
-    # Without return data - notice it's the same event
-    @some_thing.register_for_event(:stuff_happens) {same_stuff_happened}
-  
+    @some_thing.register_for_event(event: :stuff_happens, listener: self, callback: :stuff_happened)
   end
 
   def do_somestuff(parent_id, times=6)
-    # I just wrapped this in a thread to show it works cross threaded
+    # I wrapped this in a thread to show it works cross threaded
     Thread.new{
       id = rand(1000)
       times.times do
         sleep(rand(2)+1)
         puts "[#{parent_id}, #{id}]: do_somestuff"
-        @some_thing.doing(parent_id)
+        @some_thing.make_stuff_happen(parent_id)
       end
     }
   end
-  
+
   def stuff_happened(stuff)
     splat = stuff
     puts "[#{splat[:parent_id]}] stuff_happened callback: #{splat[:some_value]}"
   end
-  
-  def same_stuff_happened
+
+  def other_stuff_happened
     puts "[n/a] same_stuff_happened callback: n/a"
   end
-  
+
 end
 
 # Now show it running
-t1 = ThingOne.new
-t2 = ThingTwo.new(t1)
+evented = EventedClass.new
 
+# You can inject the evented class
+listener = ListenerClass.new(evented)
+
+# or attach to events outside of a listener class
+evented.register_for_event(event: :other_stuff_happens, listener: listener, callback: :other_stuff_happened)
+
+evented.start_other_stuff_happening
 (1..3).each do |index|
-  t2.do_somestuff(index)
+  listener.do_somestuff(index)
   puts "[#{index}] did some stuff, sleeping"
   sleep(rand(3)+4)
   puts "[#{index}] slept"
 end
 
-
+puts "all done"

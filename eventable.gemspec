@@ -8,10 +8,10 @@ Gem::Specification.new do |s|
   s.authors     = ["Mike Bethany"]
   s.email       = ["mikbe.tk@gmail.com"]
   s.homepage    = "http://mikbe.tk"
-  s.summary     = %q{An incredibly simple event mixin module.}
-  s.description = %q{Provides a simple, easy to use and understand event model. Others did way too much for my needs, I just wanted a simple way to add, listen, and fire events in a class.}
+  s.summary     = %q{An incredibly simple and easy to use event mixin module.}
+  s.description = %q{Provides an easy to use and understand event model. If you want a simple way to add events to your classes without a bunch of other unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)}
 
-  s.add_dependency('sourcify')
+  s.add_development_dependency('rspec', "~>2.6")
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

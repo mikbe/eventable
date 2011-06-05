@@ -3,9 +3,9 @@ require 'spec_helper'
 describe Eventable do
 
   before(:each) do
-      @evented = EventClass.new
-      @listener = ListenClass.new
-    end
+    @evented = EventClass.new
+    @listener = ListenClass.new
+  end
 
   context "when specifiying an event" do
 
@@ -50,6 +50,10 @@ describe Eventable do
       events.pop
       events.should_not == EventClass.events
     end
+  
+    it "should allow multiple classes to use the mixin" do
+    end
+  
   end
   
   context "when registering for an event" do
@@ -76,9 +80,6 @@ describe Eventable do
       end
 
     end
-    
-    # For now not going to raise an error if the listener callback method
-    # doesn't exist since it might be created later dynamically
 
     it "should raise an error if the event doesn't exist" do
       foo = Class.new
@@ -92,8 +93,6 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       }.should_not raise_error
     end
-
-    # I hate looking at the internal state but how else can I check these without testing more than just this?
 
     it "should allow multiple callbacks to the same method from different events" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
@@ -127,6 +126,33 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: ListenClass, callback: :class_callback)
       @evented.do_event
       ListenClass.class_callback?.should be_true
+    end
+
+    context "when multiple classes mixin eventable" do
+
+      # this is kind of redundant but just to be sure there's no bleed over through the mixin module
+
+      it "should not call the wrong class" do
+        another_evented = AnotherEventClass.new
+        another_listener = AnotherListenClass.new
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+        another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback)
+        @evented.do_event
+        @listener.callback?.should be_true
+        another_listener.callback?.should_not be_true
+      end
+
+      it "should not call the wrong class when both evented classes fire events" do
+        another_evented = AnotherEventClass.new
+        another_listener = AnotherListenClass.new
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+        another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback2)
+        @evented.do_event
+        another_evented.do_event
+        @listener.callback?.should be_true
+        another_listener.callback2?.should be_true
+      end
+
     end
 
   end
@@ -198,17 +224,62 @@ describe Eventable do
       listener2.callback?.should_not be_true
     end
 
+    context "and it has return data" do
+
+      it "should return the return values" do
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args)
+        a, b, c = rand(100), rand(100), rand(100)
+        @evented.do_event_with_args(a,b,c)
+        @listener.callback_with_args?.should == [a,b,c]
+      end
+
+      it "should return a block" do
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_block)
+        block = proc {"a block"}
+        @evented.do_event_with_block(&block)
+        @listener.callback_with_block?.should == block
+      end
+
+      it "should return the return values and a block" do
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args_and_block)
+        a, b, c, block = rand(100), rand(100), rand(100), proc {"a block"}
+        @evented.do_event_with_args_and_block(a,b,c,&block)
+        @listener.callback_with_args_and_block?.should == [a,b,c,block]
+      end
+
+    end
+    
   end
 
 end
 
 # Test classes
+
 class EventClass
   include Eventable
   event :stuff_happens
   event :other_stuff_happens
-  def do_event
-    fire_event(:stuff_happens)
+  def do_event(event=:stuff_happens)
+    fire_event(event)
+  end
+  def do_event_with_args(*args)
+    fire_event(:stuff_happens, *args)
+  end
+  def do_event_with_block(&block)
+    fire_event(:stuff_happens, &block)
+  end
+  def do_event_with_args_and_block(*args, &block)
+    fire_event(:stuff_happens, *args, &block)
+  end
+end
+
+class AnotherEventClass
+  include Eventable
+  event :stuff_happens
+  event :different_happens
+  
+  def do_event(event=:stuff_happens)
+    fire_event(event)
   end
 end
 
@@ -226,6 +297,39 @@ class ListenClass
     @callback = true
   end
   def callback2?
+    @callback2
+  end
+  def callback2
+    @callback2 = true
+  end
+  def callback_with_args(a,b,c)
+    @a, @b, @c = a, b, c
+  end
+  def callback_with_args?
+    [@a, @b, @c]
+  end
+  def callback_with_block(&block)
+    @block = block
+  end
+  def callback_with_block?
+    @block
+  end
+  def callback_with_args_and_block(a,b,c,&block)
+    @a, @b, @c, @block = a, b, c, block
+  end
+  def callback_with_args_and_block?
+    [@a, @b, @c, @block]
+  end
+end
+
+class AnotherListenClass
+  def callback?
+    @callback
+  end
+  def callback
+    @callback = true
+  end
+    def callback2?
     @callback2
   end
   def callback2

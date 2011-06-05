@@ -1,36 +1,30 @@
 $:.unshift File.expand_path(File.join(File.dirname(__FILE__), "/../lib"))
-require 'eventable'
+    require 'eventable'
 
-class ThingOne
-  include Eventable
-  event :stuff_happens
+    class EventClass
+      include Eventable
+      event :stuff_happens
   
-  def do_event
-    fire_event(:stuff_happens, {:some_value => rand(1000)})
-  end
-end
+      # don't name your method fire_event, that's taken
+      def do_event
+        puts "firing :stuff_happens"
+        fire_event(:stuff_happens, rand(1000))
+      end
+    end
 
-class ThingTwo
-  
-  # Dependency injection works fine
-  def initialize(some_object)
-    @some_thing = some_object
-    @some_thing.register_for_event(:stuff_happens) {|return_data| stuff_happened(*return_data)}
-  end
+    class ListenClass
+ 
+      def stuff_happened(stuff)
+        puts "stuff happened callback: #{stuff}"
+      end
 
-  def do_somestuff
-    @some_thing.do_event
-  end
-  
-  def stuff_happened(stuff)
-    puts "stuff happened callback"
-  end
+    end
 
-end
-
-# Now show it running
-t2 = ThingTwo.new(ThingOne.new)
-t2.do_somestuff()
-sleep(1)
+    # Now show it running
+    evented   = EventClass.new
+    listener  = ListenClass.new
+    evented.register_for_event(event: :stuff_happens, listener: listener, callback: :stuff_happened)
+    evented.do_event
+    sleep(1)
 
 

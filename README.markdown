@@ -2,45 +2,57 @@
 
 An incredibly simple way to add events to your classes.
 
-
 ##Description##
 
-Eventable provides a simple, easy to use and understand event model. Other's did way too much for my needs, I just wanted a simple way to add, listen, and fire events in a class.
+Provides an easy to use and understand event model. Other systems did way too much for my needs. I didn't need to monitor network IO ports, I didn't want a central loop that polled IO, I just wanted a simple way to add real, non-polled events to a class and to register other classes to listen for those events.
+
+If you want a simple way to add events to your classes without a bunch of other unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)
+
+You don't have to worry about memory leaks either because Eventable only make a reference to the listening object when it needs to talk to it then it disposes of that reference. Best of all it will automatically remove registered listeners when they get garbage collected.
 
 Eventable couldn't be easier to use. 
 
-This example just shows you the basics of using the module. (Without threading it's a bit pointless):
+This example shows the basics of using Eventable to add an event to a class and listen for that event. (Without threading it's a bit pointless):
 
     require 'eventable'
 
     class EventClass
       include Eventable
-      event :stuff_happens
   
+      # This is all you have to do to add an event (after you include Eventable)
+      event :stuff_happens
+
       # don't name your method fire_event, that's taken
       def do_event
         puts "firing :stuff_happens"
+        # And this is all you have to do to make the event happen
         fire_event(:stuff_happens, rand(1000))
       end
-      
+  
     end
 
     class ListenClass
- 
+
       def stuff_happened(stuff)
         puts "stuff happened callback: #{stuff}"
       end
 
     end
 
-    # Now show it running
+    # Create an instance of a class that has an event
     evented   = EventClass.new
+
+    # Create a class that listens for that event
     listener  = ListenClass.new
+
+    # Register the listener with the instance that will have the event
     evented.register_for_event(event: :stuff_happens, listener: listener, callback: :stuff_happened)
+
+    # We'll just arbitrarilly fire the event to see how it works
     evented.do_event
+
+    # Wait just to be sure you see it happen
     sleep(1)
-
-
     
 This example shows you how you might actually use it in a multi-threaded environment but is a lot harder to read because of all the debug code:
 

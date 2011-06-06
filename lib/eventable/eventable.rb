@@ -31,10 +31,19 @@ module Eventable
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
     return false unless @callbacks[event] && !@callbacks[event].empty?
-    @callbacks[event].each do |listener_id, callbacks|
-      listener = ObjectSpace._id2ref(listener_id)
-      callbacks.each {|callback| listener.send callback, *return_value, &block}
-    end
+    
+    # We don't want the callback array being altered when we're trying to read it
+    @mutex.synchronize{
+      @callbacks[event].each do |listener_id, callbacks|
+        begin
+          listener = ObjectSpace._id2ref(listener_id)
+          callbacks.each {|callback| listener.send callback, *return_value, &block}
+        rescue RangeError => re
+          # Don't bubble up a missing recycled object, I don't care if it's not there, I just won't call it
+          raise re unless re.message.match(/is recycled object/)
+        end
+      end
+    }
   end
 
   # Allows an object to listen for an event and have a callback run when the event happens
@@ -45,23 +54,27 @@ module Eventable
 
     event = args[:event]
     raise Errors::UnknownEvent unless events.include? event
-    @callbacks ||= {}
-    @callbacks[event] ||= {}
     
-    listener    = args[:listener]
-    listener_id = listener.object_id
-    callback    = args[:callback]
+    # Make access to the callback cache threadsafe
+    @mutex ||= Mutex.new
+    @mutex.synchronize {
+      @callbacks ||= {}
+      @callbacks[event] ||= {}
     
-    # save the callback info without creating a reference to the object
-    @callbacks[event][listener_id] ||= []
-    @callbacks[event][listener_id] << callback
+      listener    = args[:listener]
+      listener_id = listener.object_id
+      callback    = args[:callback]
+    
+      # save the callback info without creating a reference to the object
+      @callbacks[event][listener_id] ||= []
+      @callbacks[event][listener_id] << callback
 
-    # will remove the object from the callback list if it is destroyed
-    ObjectSpace.define_finalizer(
-      listener, 
-      unregister_finalizer(event, listener_id, callback)
-    )
-
+      # will remove the object from the callback list if it is destroyed
+      ObjectSpace.define_finalizer(
+        listener, 
+        unregister_finalizer(event, listener_id, callback)
+      )
+    }
   end
 
   # Allows objects to stop listening to events
@@ -72,10 +85,12 @@ module Eventable
     listener_id = args[:listener_id] || args[:listener].object_id
     callback    = args[:callback]
     
-    @callbacks[event].delete_if do |listener, callbacks|
-      callbacks.delete(callback) if listener == listener_id
-      callbacks.empty?
-    end
+    @mutex.synchronize {
+      @callbacks[event].delete_if do |listener, callbacks|
+        callbacks.delete(callback) if listener == listener_id
+        callbacks.empty?
+      end
+    }
   end
 
   # Wrapper for the finalize proc. You have to call a method

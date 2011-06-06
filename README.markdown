@@ -8,7 +8,7 @@ Provides an easy to use and understand event model. Other systems did way too mu
 
 If you want a simple way to add events to your classes without a bunch of other unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)
 
-You might be saying, "What about Observable? Why not just use that?" The problem with observable is that it saves a reference to the observing object. If you drop and add a bunch of them you've got a huge memory leak. With Eventable you don't have to worry about memory leaks because Eventable only make a reference to the listening object when it needs to talk to it and when it's done it disposes of that reference. Eventable will even automatically remove registered listeners when they get garbage collected.
+You might be saying, "What about Observable? Why not just use that?" The problem with observable is that it saves a reference to the observing object. If you drop and add a bunch of them you've got the potential for a huge memory leak. With Eventable you don't have to worry about memory leaks because Eventable only make a reference to the listening object when it needs to talk to it and when it's done it disposes of that reference. Eventable will even automatically remove registered listeners when they get garbage collected. You can set up a listener and not worry about removing your event hook yourself, it's done for you.
 
 Eventable also allows for more fine-grain control than Observable. You can register for specific events instead of just saying, "Hey, let me know when anything changes."
 

@@ -1,3 +1,5 @@
+require 'thread'
+
 # Incredibly simple framework for adding events
 module Eventable
 
@@ -30,10 +32,11 @@ module Eventable
   
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
-    return false unless @callbacks[event] && !@callbacks[event].empty?
-    
     # We don't want the callback array being altered when we're trying to read it
     @mutex.synchronize{
+
+      return false unless @callbacks[event] && !@callbacks[event].empty?
+
       @callbacks[event].each do |listener_id, callbacks|
         begin
           listener = ObjectSpace._id2ref(listener_id)
@@ -79,13 +82,12 @@ module Eventable
 
   # Allows objects to stop listening to events
   def unregister_for_event(args)
-    event = args[:event]
-    return unless @callbacks && @callbacks[event]
-    
-    listener_id = args[:listener_id] || args[:listener].object_id
-    callback    = args[:callback]
-    
     @mutex.synchronize {
+      event = args[:event]
+      return unless @callbacks && @callbacks[event]
+    
+      listener_id = args[:listener_id] || args[:listener].object_id
+      callback    = args[:callback]
       @callbacks[event].delete_if do |listener, callbacks|
         callbacks.delete(callback) if listener == listener_id
         callbacks.empty?
@@ -100,3 +102,5 @@ module Eventable
   end
   
 end
+
+

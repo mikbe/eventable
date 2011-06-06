@@ -8,12 +8,15 @@ Provides an easy to use and understand event model. Other systems did way too mu
 
 If you want a simple way to add events to your classes without a bunch of other unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)
 
-You might be saying, "What about Observable? Why not just use that?" The problem with observable is that it saves a reference to the observing object. If you drop and add a bunch of them you've got the potential for a huge memory leak. With Eventable you don't have to worry about memory leaks because Eventable only make a reference to the listening object when it needs to talk to it and when it's done it disposes of that reference. Eventable will even automatically remove registered listeners when they get garbage collected. You can set up a listener and not worry about removing your event hook yourself, it's done for you.
+You might be saying, "What about Observable? Why not just use that?" The problem with observable is that it saves a reference to the observing object. If you drop and add a bunch of observers without removing them from the observed object you've got the potential for a huge memory leak (depending on the size of your listeners of course).
+
+With Eventable you don't have to worry about memory leaks because Eventable only make a reference to the listening object when it needs to talk to it. When it's done the reference goes out of scope and can be garbage collected. 
+
+Eventable will even automatically remove registered listeners when they get garbage collected. You can set up a listener and not worry about removing your event hook yourself; it's done for you.
 
 Eventable also allows for more fine-grain control than Observable. You can register for specific events instead of just saying, "Hey, let me know when anything changes."
 
-Eventable couldn't be easier to use. 
-
+##Examples##
 This example shows the basics of using Eventable to add an event to a class and listen for that event. (Without threading it's a bit pointless):
 
     require 'eventable'
@@ -142,16 +145,31 @@ This example shows you how you might actually use it in a multi-threaded environ
 ##Version History##
 
 **2011.06.06**  
-Ver: 0.1.0.beta1
-Completely redesigned from naive first attempt.
+Ver: 0.1.0  
+Went crazy and just completely wrapped all calls that modify or read callbacks cache with an instance mutex.
+
+From what I understand locks are really expensive in Ruby so I'll need to clean this up and do some real performance testing.
+
+Note:
+Releasing just to stop RubyGems.org from showing last beta instead of newest beta when there are only --pre versions available of a gem. I get why they do it, but it's annoying to have people downloading beta 1 when you're really on beta 2. Plus I need to start using it myself...
+
+**2011.06.05**  
+Ver: 0.1.0.beta2  
+Wrapped #\_id2ref call in begin...rescue block.  
+Added thread synchronization to calls that modify or read callbacks cache.
+
+**2011.06.05**  
+Ver: 0.1.0.beta1  
+Completely redesigned from naive first attempt.  
 
 **Added features**  
 
-Now includes RSpecs.
+Now includes RSpecs.  
 
 Garbage collection safe:  
-* Won't keep references to listeners open. 
-* Automatically removes garbage collected listeners from event notifications.  
+
+* Won't keep references to listeners open.  
+* Automatically removes garbage collected listeners from  event notifications.  
 
 
 **2011.06.04**  

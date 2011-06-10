@@ -9,6 +9,15 @@ module Eventable
   # Add the #event method to the extending class not instances of that class
   def self.included(base)
     base.extend(EventableClassMethods)
+    class << base
+      alias_method :_new, :new
+      def new(*args)
+        o = _new(*args)
+        o.instance_variable_set :@eventable_mutex, Mutex.new
+        return o
+      end
+    end
+
   end
   
   module EventableClassMethods
@@ -33,8 +42,7 @@ module Eventable
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
     # We don't want the callback array being altered when we're trying to read it
-    @mutex ||= Mutex.new
-    @mutex.synchronize{
+    @eventable_mutex.synchronize{
 
       return false unless @callbacks && @callbacks[event] && !@callbacks[event].empty?
 
@@ -61,8 +69,7 @@ module Eventable
     raise Errors::UnknownEvent unless events.include? event
     
     # Make access to the callback cache threadsafe
-    @mutex ||= Mutex.new
-    @mutex.synchronize {
+    @eventable_mutex.synchronize {
       @callbacks ||= {}
       @callbacks[event] ||= {}
     
@@ -84,8 +91,7 @@ module Eventable
 
   # Allows objects to stop listening to events
   def unregister_for_event(args)
-    @mutex ||= Mutex.new
-    @mutex.synchronize {
+    @eventable_mutex.synchronize {
       event = args[:event]
       return unless @callbacks && @callbacks[event]
     

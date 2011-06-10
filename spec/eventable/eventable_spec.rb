@@ -158,6 +158,11 @@ describe Eventable do
   end
   
   context "when unregistering for an event" do
+
+    it "should not throw an error if unregistering for an event you weren't registered for" do
+      # Is this supporting sloppy programming(bad) or lazy programming(good)?
+      lambda{@evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)}.should_not raise_error
+    end
   
     it "should remove a callback" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
@@ -187,6 +192,11 @@ describe Eventable do
   end
 
   context "when an event is fired" do
+
+    it "should not throw an error if no listeners have been registered for an event" do
+      @evented.do_event
+      lambda{@evented.do_event}.should_not raise_error
+    end
   
     it "should call back the specified method when the event is fired" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)

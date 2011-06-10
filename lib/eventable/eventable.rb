@@ -48,6 +48,7 @@ module Eventable
         end
       end
     }
+    true
   end
 
   # Allows an object to listen for an event and have a callback run when the event happens

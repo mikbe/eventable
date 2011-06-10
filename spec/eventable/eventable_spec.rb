@@ -193,6 +193,16 @@ describe Eventable do
 
   context "when an event is fired" do
 
+    it "should return false if the event did not fire" do
+      @evented.do_event
+      @evented.do_event.should be_false
+    end
+
+    it "should return true if the event did fire" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.do_event.should be_true
+    end
+
     it "should not throw an error if no listeners have been registered for an event" do
       @evented.do_event
       lambda{@evented.do_event}.should_not raise_error

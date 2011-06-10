@@ -144,6 +144,18 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+
+**2011.06.10**  
+Ver: 0.1.1  
+
+Features:
+If events fired specifically returns true and returns false if it can't for whatever reason (e.g. no listeners registered).
+
+Fixes:
+* Throws error if event is fired and no listeners are registered (Thanks for bug report Benjamin Yu)
+* Workaround for RubyGems pre 1.8.3 date bug that locks up all of RubyGems (Thanks again Benjamin Yu)
+
+
 **2011.06.06**  
 Ver: 0.1.0  
 Went crazy and just completely wrapped all calls that modify or read callbacks cache with an instance mutex.

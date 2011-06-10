@@ -16,6 +16,10 @@ Eventable will even automatically remove registered listeners when they get garb
 
 Eventable also allows for more fine-grain control than Observable. You can register for specific events instead of just saying, "Hey, let me know when anything changes."
 
+##Install##
+
+`$ gem install eventable`
+
 ##Examples##
 This example shows the basics of using Eventable to add an event to a class and listen for that event. (Without threading it's a bit pointless):
 
@@ -147,10 +151,11 @@ This example shows you how you might actually use it in a multi-threaded environ
 **2011.06.10**  
 Ver: 0.1.1  
 
-Features:
+Features:  
 If events fired specifically returns true and returns false if it can't for whatever reason (e.g. no listeners registered).
 
-Fixes:
+Fixes:  
+
 * Throws error if event is fired and no listeners are registered (Thanks for bug report Benjamin Yu)
 * Workaround for RubyGems pre 1.8.3 date bug that locks up all of RubyGems (Thanks again Benjamin Yu)
 

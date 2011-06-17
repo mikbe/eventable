@@ -148,6 +148,14 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+Ver: 0.1.2
+
+Done:
+Renamed most instance variables to help avoid name collisions.
+
+To Do:
+Threadsafe mutex creation.
+
 **2011.06.10**  
 Ver: 0.1.1  
 

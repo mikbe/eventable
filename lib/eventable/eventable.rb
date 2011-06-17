@@ -15,13 +15,13 @@ module Eventable
     
     # register an event
     def event(event_name)
-      @events ||= []
-      @events << event_name unless @events.include? event_name
+      @eventable_events ||= []
+      @eventable_events << event_name unless @eventable_events.include? event_name
     end
     
     # returns a list of registered events
     def events
-      @events.clone
+      @eventable_events.clone
     end
     
   end
@@ -33,8 +33,7 @@ module Eventable
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
     # We don't want the callback array being altered when we're trying to read it
-    @mutex ||= Mutex.new
-    @mutex.synchronize{
+    @eventable_mutex.synchronize{
 
       return false unless @callbacks && @callbacks[event] && !@callbacks[event].empty?
 
@@ -61,8 +60,7 @@ module Eventable
     raise Errors::UnknownEvent unless events.include? event
     
     # Make access to the callback cache threadsafe
-    @mutex ||= Mutex.new
-    @mutex.synchronize {
+    @eventable_mutex.synchronize {
       @callbacks ||= {}
       @callbacks[event] ||= {}
     
@@ -84,8 +82,7 @@ module Eventable
 
   # Allows objects to stop listening to events
   def unregister_for_event(args)
-    @mutex ||= Mutex.new
-    @mutex.synchronize {
+    @eventable_mutex.synchronize {
       event = args[:event]
       return unless @callbacks && @callbacks[event]
     

@@ -7,6 +7,48 @@ describe Eventable do
     @listener = ListenClass.new
   end
 
+  context "when inheriting eventable" do
+
+    it "should not raise an error if class has no initialize method" do
+      lambda{
+        class Foo
+          include Eventable
+          event :do_stuff
+        end
+        f = Foo.new
+        f.fire_event(:do_stuff)
+      }.should_not raise_error
+    end
+
+    it "should not raise an error if super is called in initialize" do
+      lambda{
+        class Foo
+          include Eventable
+          event :do_stuff
+          def initialize
+            super
+          end
+        end
+        f = Foo.new
+        f.fire_event(:do_stuff)
+      }.should_not raise_error
+    end
+    
+    it "should raise an error if super is not called in initialize" do
+      lambda{
+        class Foo
+          include Eventable
+          event :do_stuff
+          def initialize
+          end
+        end
+        f = Foo.new
+        f.fire_event(:do_stuff)
+      }.should raise_error(Eventable::Errors::SuperNotCalledInInitialize)
+    end
+    
+  end
+
   context "when specifiying an event" do
 
     it 'should list the event from the class' do

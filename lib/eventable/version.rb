@@ -1,3 +1,3 @@
 module Eventable
-  VERSION = "0.1.2beta0"
+  VERSION = "0.1.2"
 end

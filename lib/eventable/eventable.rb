@@ -30,10 +30,15 @@ module Eventable
     self.class.events
   end
   
+  def initialize
+    @eventable_mutex = Mutex.new
+  end
+  
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
     # We don't want the callback array being altered when we're trying to read it
-    @eventable_mutex.synchronize{
+    check_mutex
+    @eventable_mutex.synchronize {
 
       return false unless @callbacks && @callbacks[event] && !@callbacks[event].empty?
 
@@ -60,6 +65,7 @@ module Eventable
     raise Errors::UnknownEvent unless events.include? event
     
     # Make access to the callback cache threadsafe
+    check_mutex
     @eventable_mutex.synchronize {
       @callbacks ||= {}
       @callbacks[event] ||= {}
@@ -82,6 +88,7 @@ module Eventable
 
   # Allows objects to stop listening to events
   def unregister_for_event(args)
+    check_mutex
     @eventable_mutex.synchronize {
       event = args[:event]
       return unless @callbacks && @callbacks[event]
@@ -93,6 +100,12 @@ module Eventable
         callbacks.empty?
       end
     }
+  end
+
+  private
+  
+  def check_mutex
+    raise Errors::SuperNotCalledInInitialize, "You must include super in your class's initialize method" unless @eventable_mutex
   end
 
   # Wrapper for the finalize proc. You have to call a method

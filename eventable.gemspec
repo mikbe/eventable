@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.email       = ["mikbe.tk@gmail.com"]
   s.homepage    = "http://mikbe.tk/projects#eventable"
   s.summary     = %q{An incredibly simple and easy to use event mixin module.}
-  s.description = %q{Provides an easy to use and understand event model. If you want a simple, light-weight way to add events to your classes without a bunch of unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)}
+  s.description = %q{Provides an easy to use and understand event model. If you want a simple, light-weight way to add events to your classes this is the solution for you.}
 
   s.add_development_dependency('rspec', "~>2.6")
 

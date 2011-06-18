@@ -6,6 +6,12 @@ class EventedClass
   event :stuff_happens
   event :other_stuff_happens
 
+  def initialize
+    # If you don't call super Eventable will raise an error
+    super # <= VERY important, comment this out to see the error
+    # do your initialize stuff
+  end
+
   def make_stuff_happen(parent_id)
     # You handle concurrency however you want, threads or fibers, up to you.
     Thread.new{

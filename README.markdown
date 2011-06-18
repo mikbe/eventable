@@ -20,6 +20,15 @@ Eventable also allows for more fine-grain control than Observable. You can regis
 
 `$ gem install eventable`
 
+##Usage Instructions##
+
+* Include the module
+* **Important:** If you have an initialize method call `super` as first line (see below). If you don't have an initialize method you don't have to add one. Super is called automatically for you.
+* Add an event, e.g. `event :your_event`
+* Fire the event when it should be fired: `fire_event(:your_event)`
+
+To reiterate you **must** call `super` in your `initialize` method or Eventable won't work and you'll get an error. Eventable needs to create a mutex to make it thread safe, if you don't call `super` the mutex variable won't be created.
+
 ##Examples##
 This example shows the basics of using Eventable to add an event to a class and listen for that event. (Without threading it's a bit pointless):
 
@@ -30,6 +39,9 @@ This example shows the basics of using Eventable to add an event to a class and 
   
       # This is all you have to do to add an event (after you include Eventable)
       event :stuff_happens
+
+      # There's no initialize method so you do
+      # not have to worry about calling super.
 
       # don't name your method fire_event, that's taken
       def do_event
@@ -74,6 +86,12 @@ This example shows you how you might actually use it in a multi-threaded environ
       include Eventable
       event :stuff_happens
       event :other_stuff_happens
+
+      def initialize
+        # If you don't call super Eventable will raise an error
+        super # <= VERY important, comment this out to see the error
+        # do your initialize stuff
+      end
   
       def make_stuff_happen(parent_id)
         # You handle concurrency however you want, threads or fibers, up to you.
@@ -145,16 +163,14 @@ This example shows you how you might actually use it in a multi-threaded environ
     puts "all done"
 
 
-
 ##Version History##
 
 Ver: 0.1.2
 
-Done:
-Renamed most instance variables to help avoid name collisions.
+Design updates/fixes:
 
-To Do:
-Threadsafe mutex creation.
+* Renamed most instance variables to help avoid name collisions.
+* Threadsafe mutex creation. Make sure you call `super` in your class's initialize method!
 
 **2011.06.10**  
 Ver: 0.1.1  

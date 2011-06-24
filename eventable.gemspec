@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
   s.description = %q{Provides an easy to use and understand event model. If you want a simple, light-weight way to add events to your classes this is the solution for you.}
 
   s.add_development_dependency('rspec', "~>2.6")
+  s.add_development_dependency('psych', "~>1.2")
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {spec}/*`.split("\n")

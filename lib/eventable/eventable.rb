@@ -10,30 +10,30 @@ module Eventable
   def self.included(base)
     base.extend(EventableClassMethods)
   end
-  
+
   module EventableClassMethods
-    
+
     # register an event
     def event(event_name)
       @eventable_events ||= []
       @eventable_events << event_name unless @eventable_events.include? event_name
     end
-    
+
     # returns a list of registered events
     def events
       @eventable_events.clone
     end
-    
+
   end
 
   def events
     self.class.events
   end
-  
+
   def initialize
     @eventable_mutex = Mutex.new
   end
-  
+
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
     # We don't want the callback array being altered when we're trying to read it
@@ -45,7 +45,9 @@ module Eventable
       @callbacks[event].each do |listener_id, callbacks|
         begin
           listener = ObjectSpace._id2ref(listener_id)
-          callbacks.each {|callback| listener.send callback, *return_value, &block}
+          callbacks.each do |callback|
+            Thread.new {listener.send callback, *return_value, &block}
+          end
         rescue RangeError => re
           # Don't bubble up a missing recycled object, I don't care if it's not there, I just won't call it
           raise re unless re.message.match(/is recycled object/)
@@ -61,19 +63,19 @@ module Eventable
       raise ArgumentError, "Missing parameter :#{parameter}" unless args[parameter]
     end
 
-    event = args[:event]
-    raise Errors::UnknownEvent unless events.include? event
-    
     # Make access to the callback cache threadsafe
     check_mutex
     @eventable_mutex.synchronize {
+      event = args[:event]
+      raise Errors::UnknownEvent unless events.include? event
+
       @callbacks ||= {}
       @callbacks[event] ||= {}
-    
+
       listener    = args[:listener]
       listener_id = listener.object_id
       callback    = args[:callback]
-    
+
       # save the callback info without creating a reference to the object
       @callbacks[event][listener_id] ||= []
       @callbacks[event][listener_id] << callback
@@ -92,7 +94,7 @@ module Eventable
     @eventable_mutex.synchronize {
       event = args[:event]
       return unless @callbacks && @callbacks[event]
-    
+
       listener_id = args[:listener_id] || args[:listener].object_id
       callback    = args[:callback]
       @callbacks[event].delete_if do |listener, callbacks|
@@ -103,7 +105,7 @@ module Eventable
   end
 
   private
-  
+
   def check_mutex
     raise Errors::SuperNotCalledInInitialize, "You must include super in your class's initialize method" unless @eventable_mutex
   end
@@ -113,7 +115,7 @@ module Eventable
   def unregister_finalizer(event, listener_id, callback)
     proc {unregister_for_event(event: event, listener_id: listener_id, callback: callback)}
   end
-  
+
 end
 
 

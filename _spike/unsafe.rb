@@ -3,14 +3,9 @@ Thread.abort_on_exception = true
 
 class Foo
   attr_accessor :bar
-  def initialize
-    @fiber = Fiber.new do
-      Fiber.yield @bar ||= rand(10000000000)
-    end
-  end
 
   def baz
-    @fiber.resume
+    @bar ||= rand(10000000000)
   end
 end
 

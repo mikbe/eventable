@@ -37,19 +37,6 @@ describe Eventable do
       }.should_not raise_error
     end
 
-    it "should raise an error if super is not called in initialize" do
-      lambda{
-        class Foo
-          include Eventable
-          event :do_stuff
-          def initialize
-          end
-        end
-        f = Foo.new
-        f.fire_event(:do_stuff)
-      }.should raise_error(Eventable::Errors::SuperNotCalledInInitialize)
-    end
-
   end
 
   context "when specifiying an event" do
@@ -104,19 +91,19 @@ describe Eventable do
 
       # these tests could be refactored into one...
       it "should raise an error if the event is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(listener: @listener, callback: :callback)
         }.should raise_error(ArgumentError)
       end
 
       it "should raise an error if the listener is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(event: :do_something, callback: :callback)
         }.should raise_error(ArgumentError)
       end
 
       it "should raise an error if the callback is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(event: :do_something, listener: @listener)
         }.should raise_error(ArgumentError)
       end
@@ -125,13 +112,13 @@ describe Eventable do
 
     it "should raise an error if the event doesn't exist" do
       foo = Class.new
-      lambda{ 
+      lambda{
         @evented.register_for_event(event: :nonexistent, listener: foo, callback: :bar)
       }.should raise_error(Eventable::Errors::UnknownEvent)
     end
 
     it "should not raise an error when registering for events that do exist" do
-      lambda{ 
+      lambda{
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       }.should_not raise_error
     end
@@ -139,13 +126,13 @@ describe Eventable do
     it "should allow multiple callbacks to the same method from different events" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.register_for_event(event: :other_stuff_happens, listener: @listener, callback: :callback)
-      @evented.callbacks.count.should == 2 
+      @evented.callbacks.count.should == 2
     end
 
     it "should not add a callback that's already been added" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-      @evented.callbacks[:stuff_happens].count.should == 1 
+      @evented.callbacks[:stuff_happens].count.should == 1
     end
 
     it "should allow multiple instances of the same class to register the same callback for the same event" do
@@ -232,7 +219,7 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: listener, callback: :callback)
       end
       GC.start
-      @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id) 
+      @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id)
     end
 
   end

@@ -4,7 +4,7 @@ An incredibly simple way to add events to your classes.
 
 ##Description##
 
-Provides an easy to use and understand event model. Other systems did way too much for my needs. I didn't need to monitor network IO ports, I didn't want a central loop that polled IO, I just wanted a simple way to add real, non-polled events to a class and to register other classes to listen for those events.
+Provides an easy to use and understand event model. Other systems did way too much for my needs: I didn't need to monitor network IO ports, I didn't want a central loop that polled IO, I just wanted a simple way to add real, non-polled events to a class and to register other classes to listen for those events.
 
 If you want a simple way to add events to your classes without a bunch of other unrelated IO stuff this is the solution for you. (If you want to monitor IO events check out EventMachine)
 
@@ -15,6 +15,10 @@ With Eventable you don't have to worry about memory leaks because Eventable only
 Eventable will even automatically remove registered listeners when they get garbage collected. You can set up a listener and not worry about removing your event hook yourself; it's done for you.
 
 Eventable also allows for more fine-grain control than Observable. You can register for specific events instead of just saying, "Hey, let me know when anything changes."
+
+##Concurrency considerations##
+
+Events and threads do not scale well past a certain point but that's OK; they aren't meant to. They are meant for fast, simple communication beteen processes not large distributed processes like serving websites on massive server farms. If you need a solution that scales well to large distributed systems check out the Actor concurrency model.
 
 ##Install##
 
@@ -165,6 +169,17 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+**2011.06.28**  
+Ver: 0.1.3  
+
+Updates:  
+
+Callbacks are now threaded:  
+This patches one of the last concurrency issues; if a callback takes a long time or hangs it won't affect any other callbacks or events that need to fire.  
+
+It's your responsiblity to make sure your callback works, as long as it does the callback thread will go out of scope (unless you retain it) and everyone is happy.  
+
+**2011.06.17**
 Ver: 0.1.2
 
 Design updates/fixes:

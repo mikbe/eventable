@@ -18,8 +18,8 @@ describe Eventable do
           include Eventable
           event :do_stuff
         end
-        f = Foo.new
-        f.fire_event(:do_stuff)
+      f = Foo.new
+      f.fire_event(:do_stuff)
       }.should_not raise_error
     end
 
@@ -30,221 +30,212 @@ describe Eventable do
           event :do_stuff
           def initialize
             super
+          end
         end
-      end
-      f = Foo.new
-      f.fire_event(:do_stuff)
-    }.should_not raise_error
-  end
+        f = Foo.new
+        f.fire_event(:do_stuff)
+      }.should_not raise_error
+    end
 
-  it "should raise an error if super is not called in initialize" do
-    lambda{
-      class Foo
-        include Eventable
-        event :do_stuff
-        def initialize
+    it "should raise an error if super is not called in initialize" do
+      lambda{
+        class Foo
+          include Eventable
+          event :do_stuff
+          def initialize
+          end
         end
-      end
-      f = Foo.new
-      f.fire_event(:do_stuff)
-    }.should raise_error(Eventable::Errors::SuperNotCalledInInitialize)
+        f = Foo.new
+        f.fire_event(:do_stuff)
+      }.should raise_error(Eventable::Errors::SuperNotCalledInInitialize)
+    end
+
   end
 
-end
+  context "when specifiying an event" do
 
-context "when specifiying an event" do
+    it 'should list the event from the class' do
+      EventClass.events.should include(:stuff_happens)
+    end
 
-  it 'should list the event from the class' do
-    EventClass.events.should include(:stuff_happens)
-  end
+    it 'should list more than one event' do
+      EventClass.events.should include(:other_stuff_happens)
+    end
 
-  it 'should list more than one event' do
-    EventClass.events.should include(:other_stuff_happens)
-  end
+    it 'should list the event from an instance of the class' do
+      @evented.events.should include(:stuff_happens)
+    end
 
-  it 'should list the event from an instance of the class' do
-    @evented.events.should include(:stuff_happens)
-  end
+    it 'should list more than one event from an instance' do
+      @evented.events.should include(:other_stuff_happens)
+    end
 
-  it 'should list more than one event from an instance' do
-    @evented.events.should include(:other_stuff_happens)
-  end
-
-  it "should not add an event that's already been added" do
-    eval %{
+    it "should not add an event that's already been added" do
+      eval %{
       class EventClass
         include Eventable
         event :stuff_happens
       end
-    }
-    EventClass.events.count.should == 2
-  end
+      }
+      EventClass.events.count.should == 2
+    end
 
-  it "should not add events to other classes" do
-    eval %{
+    it "should not add events to other classes" do
+      eval %{
       class EventClass2
         include Eventable
         event :some_other_event
       end
-    }
-    EventClass.events.should_not include(:some_other_event)
-  end
-
-  it "should not allow its event list to be altered external" do
-    events = EventClass.events
-    events.pop
-    events.should_not == EventClass.events
-  end
-
-  it "should allow events to be added to an instance" do
-    instance = EventClass.new
-    lambda{instance.events += {new_event: ->{"blah"}} }.should_not raise_error
-  end
-
-  it "should allow multiple classes to use the mixin" do
-  end
-
-
-end
-
-context "when registering for an event" do
-
-  context "and there is a missing parameter" do
-
-    # these tests could be refactored into one...
-    it "should raise an error if the event is not specified" do
-      lambda{ 
-        @evented.register_for_event(listener: @listener, callback: :callback)
-      }.should raise_error(ArgumentError)
+      }
+      EventClass.events.should_not include(:some_other_event)
     end
 
-    it "should raise an error if the listener is not specified" do
-      lambda{ 
-        @evented.register_for_event(event: :do_something, callback: :callback)
-      }.should raise_error(ArgumentError)
-    end
-
-    it "should raise an error if the callback is not specified" do
-      lambda{ 
-        @evented.register_for_event(event: :do_something, listener: @listener)
-      }.should raise_error(ArgumentError)
+    it "should not allow its event list to be altered external" do
+      events = EventClass.events
+      events.pop
+      events.should_not == EventClass.events
     end
 
   end
 
-  it "should raise an error if the event doesn't exist" do
-    foo = Class.new
-    lambda{ 
-      @evented.register_for_event(event: :nonexistent, listener: foo, callback: :bar)
-    }.should raise_error(Eventable::Errors::UnknownEvent)
-  end
+  context "when registering for an event" do
 
-  it "should not raise an error when registering for events that do exist" do
-    lambda{ 
+    context "and there is a missing parameter" do
+
+      # these tests could be refactored into one...
+      it "should raise an error if the event is not specified" do
+        lambda{ 
+          @evented.register_for_event(listener: @listener, callback: :callback)
+        }.should raise_error(ArgumentError)
+      end
+
+      it "should raise an error if the listener is not specified" do
+        lambda{ 
+          @evented.register_for_event(event: :do_something, callback: :callback)
+        }.should raise_error(ArgumentError)
+      end
+
+      it "should raise an error if the callback is not specified" do
+        lambda{ 
+          @evented.register_for_event(event: :do_something, listener: @listener)
+        }.should raise_error(ArgumentError)
+      end
+
+    end
+
+    it "should raise an error if the event doesn't exist" do
+      foo = Class.new
+      lambda{ 
+        @evented.register_for_event(event: :nonexistent, listener: foo, callback: :bar)
+      }.should raise_error(Eventable::Errors::UnknownEvent)
+    end
+
+    it "should not raise an error when registering for events that do exist" do
+      lambda{ 
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      }.should_not raise_error
+    end
+
+    it "should allow multiple callbacks to the same method from different events" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    }.should_not raise_error
-  end
+      @evented.register_for_event(event: :other_stuff_happens, listener: @listener, callback: :callback)
+      @evented.callbacks.count.should == 2 
+    end
 
-  it "should allow multiple callbacks to the same method from different events" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :other_stuff_happens, listener: @listener, callback: :callback)
-    @evented.callbacks.count.should == 2 
-  end
-
-  it "should not add a callback that's already been added" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.callbacks[:stuff_happens].count.should == 1 
-  end
-
-  it "should allow multiple instances of the same class to register the same callback for the same event" do
-    listener2 = ListenClass.new
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback)
-    @evented.callbacks[:stuff_happens].keys.should == [@listener.object_id, listener2.object_id]
-  end
-
-  it "should allow callbacks from the same event to different methods in the same instance" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback2)
-    @evented.do_event
-    sleep(CALLBACK_WAIT)
-    @listener.callback?.should be_true
-    @listener.callback2?.should be_true
-  end
-
-  it "should allow callbacks to class methods" do
-    # should be a no brainer because a class is an object too, but just to be sure
-    @evented.register_for_event(event: :stuff_happens, listener: ListenClass, callback: :class_callback)
-    @evented.do_event
-    sleep(CALLBACK_WAIT)
-    ListenClass.class_callback?.should be_true
-  end
-
-  context "when multiple classes mixin eventable" do
-
-    # this is kind of redundant but just to be sure there's no bleed over through the mixin module
-
-    it "should not call the wrong class" do
-      another_evented = AnotherEventClass.new
-      another_listener = AnotherListenClass.new
+    it "should not add a callback that's already been added" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-      another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback)
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.callbacks[:stuff_happens].count.should == 1 
+    end
+
+    it "should allow multiple instances of the same class to register the same callback for the same event" do
+      listener2 = ListenClass.new
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback)
+      @evented.callbacks[:stuff_happens].keys.should == [@listener.object_id, listener2.object_id]
+    end
+
+    it "should allow callbacks from the same event to different methods in the same instance" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback2)
       @evented.do_event
       sleep(CALLBACK_WAIT)
       @listener.callback?.should be_true
-      another_listener.callback?.should_not be_true
+      @listener.callback2?.should be_true
     end
 
-    it "should not call the wrong class when both evented classes fire events" do
-      another_evented = AnotherEventClass.new
-      another_listener = AnotherListenClass.new
-      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-      another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback2)
+    it "should allow callbacks to class methods" do
+      # should be a no brainer because a class is an object too, but just to be sure
+      @evented.register_for_event(event: :stuff_happens, listener: ListenClass, callback: :class_callback)
       @evented.do_event
-      another_evented.do_event
       sleep(CALLBACK_WAIT)
-      @listener.callback?.should be_true
-      another_listener.callback2?.should be_true
+      ListenClass.class_callback?.should be_true
+    end
+
+    context "when multiple classes mixin eventable" do
+
+      # this is kind of redundant but just to be sure there's no bleed over through the mixin module
+
+      it "should not call the wrong class" do
+        another_evented = AnotherEventClass.new
+        another_listener = AnotherListenClass.new
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+        another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback)
+        @evented.do_event
+        sleep(CALLBACK_WAIT)
+        @listener.callback?.should be_true
+        another_listener.callback?.should_not be_true
+      end
+
+      it "should not call the wrong class when both evented classes fire events" do
+        another_evented = AnotherEventClass.new
+        another_listener = AnotherListenClass.new
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+        another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback2)
+        @evented.do_event
+        another_evented.do_event
+        sleep(CALLBACK_WAIT)
+        @listener.callback?.should be_true
+        another_listener.callback2?.should be_true
+      end
+
     end
 
   end
 
-end
+  context "when unregistering for an event" do
 
-context "when unregistering for an event" do
-
-  it "should not throw an error if unregistering for an event you weren't registered for" do
-    # Is this supporting sloppy programming(bad) or lazy programming(good)?
-    lambda{@evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)}.should_not raise_error
-  end
-
-  it "should remove a callback" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.callbacks[:stuff_happens].keys.should include(@listener.object_id) # <= just to be sure...
-    @evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.callbacks[:stuff_happens].keys.should_not include(@listener.object_id)
-  end
-
-  it "should not call a callback that has been removed" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.do_event
-    @listener.callback?.should_not be_true
-  end
-
-  it "should automatically remove callbacks to objects that are garbage collected" do
-    listener_object_id = nil
-    (0..1).each do
-      listener = ListenClass.new
-      listener_object_id ||= listener.object_id
-      @evented.register_for_event(event: :stuff_happens, listener: listener, callback: :callback)
+    it "should not throw an error if unregistering for an event you weren't registered for" do
+      # Is this supporting sloppy programming(bad) or lazy programming(good)?
+      lambda{@evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)}.should_not raise_error
     end
-    GC.start
-    @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id) 
-  end
 
-end
+    it "should remove a callback" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.callbacks[:stuff_happens].keys.should include(@listener.object_id) # <= just to be sure...
+      @evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.callbacks[:stuff_happens].keys.should_not include(@listener.object_id)
+    end
+
+    it "should not call a callback that has been removed" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.do_event
+      @listener.callback?.should_not be_true
+    end
+
+    it "should automatically remove callbacks to objects that are garbage collected" do
+      listener_object_id = nil
+      (0..1).each do
+        listener = ListenClass.new
+        listener_object_id ||= listener.object_id
+        @evented.register_for_event(event: :stuff_happens, listener: listener, callback: :callback)
+      end
+      GC.start
+      @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id) 
+    end
+
+  end
 
   context "when an event is fired" do
 
@@ -329,7 +320,7 @@ end
     end
 
     context "when multithreading" do
-      
+
       it "should not block on callbacks" do
         bc = BlockingClass.new
         @evented.register_for_event(event: :stuff_happens, listener: bc, callback: :blocking_call)
@@ -342,7 +333,7 @@ end
     end
 
   end
-  
+
 end
 
 # Test classes
@@ -432,7 +423,7 @@ class AnotherListenClass
   def callback
     @callback = true
   end
-    def callback2?
+  def callback2?
     @callback2
   end
   def callback2

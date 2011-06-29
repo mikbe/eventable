@@ -10,14 +10,9 @@ module Eventable
       @eventable_events ||= []
       @eventable_events << event_name unless @eventable_events.include? event_name
     end
-    #alias :event= :event
 
     # returns a list of registered events
     def events
-      #puts super.respond_to?( :events, false )
-      # x = ( self.class.respond_to?(:events,false) ? self.class.events : [] ) << ( @eventable_events ? @eventable_events.clone : [] )
-      # puts x
-      # x
       @eventable_events.clone
     end
 
@@ -37,7 +32,6 @@ module Eventable
 
   def initialize
     super
-    #include EventableEventMethods
     @eventable_mutex = Mutex.new
   end
 
@@ -123,5 +117,3 @@ module Eventable
   end
 
 end
-
-

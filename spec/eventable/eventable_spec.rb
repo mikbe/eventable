@@ -1,7 +1,4 @@
 require 'spec_helper'
-require 'psych'
-require 'yaml'
-YAML::ENGINE.yamler = 'psych' 
 
 # Callbacks are threaded to avoid blocking so tests need to wait for the callback to be scheduled and run
 CALLBACK_WAIT = 0.01
@@ -14,7 +11,6 @@ describe Eventable do
   end
 
   context "when inheriting eventable" do
-
 
     it "should not raise an error if class has no initialize method" do
       lambda{
@@ -98,6 +94,11 @@ context "when specifiying an event" do
     events = EventClass.events
     events.pop
     events.should_not == EventClass.events
+  end
+
+  it "should allow events to be added to an instance" do
+    instance = EventClass.new
+    lambda{instance.events += {new_event: ->{"blah"}} }.should_not raise_error
   end
 
   it "should allow multiple classes to use the mixin" do
@@ -245,77 +246,77 @@ context "when unregistering for an event" do
 
 end
 
-context "when an event is fired" do
+  context "when an event is fired" do
 
-  it "should return false if the event did not fire" do
-    @evented.do_event
-    @evented.do_event.should be_false
-  end
-
-  it "should return true if the event did fire" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.do_event.should be_true
-  end
-
-  it "should not throw an error if no listeners have been registered for an event" do
-    @evented.do_event
-    lambda{@evented.do_event}.should_not raise_error
-  end
-
-  it "should call back the specified method when the event is fired" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.do_event
-    sleep(CALLBACK_WAIT)
-    @listener.callback?.should be_true
-  end
-
-  it "should not call back the wrong method when the event is fired" do
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.do_event
-    @listener.callback2?.should_not be_true
-  end
-
-  it "should call back more than one class" do
-    listener2 = ListenClass.new
-
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
-
-    @evented.do_event
-    sleep(CALLBACK_WAIT)
-    @listener.callback?.should be_true
-    listener2.callback2?.should be_true
-  end
-
-  it "should not call back the wrong method when using multiple classes" do
-    listener2 = ListenClass.new
-
-    @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-    @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
-
-    @evented.do_event
-    sleep(CALLBACK_WAIT)
-    @listener.callback2?.should_not be_true
-    listener2.callback?.should_not be_true
-  end
-
-  context "and it has return data" do
-
-    it "should return the return values" do
-      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args)
-      a, b, c = rand(100), rand(100), rand(100)
-      @evented.do_event_with_args(a,b,c)
-      sleep(CALLBACK_WAIT)
-      @listener.callback_with_args?.should == [a,b,c]
+    it "should return false if the event did not fire" do
+      @evented.do_event
+      @evented.do_event.should be_false
     end
 
-    it "should return a block" do
-      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_block)
-      block = proc {"a block"}
-      @evented.do_event_with_block(&block)
-      sleep(CALLBACK_WAIT)
-      @listener.callback_with_block?.should == block
+    it "should return true if the event did fire" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.do_event.should be_true
     end
+
+    it "should not throw an error if no listeners have been registered for an event" do
+      @evented.do_event
+      lambda{@evented.do_event}.should_not raise_error
+    end
+
+    it "should call back the specified method when the event is fired" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.do_event
+      sleep(CALLBACK_WAIT)
+      @listener.callback?.should be_true
+    end
+
+    it "should not call back the wrong method when the event is fired" do
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.do_event
+      @listener.callback2?.should_not be_true
+    end
+
+    it "should call back more than one class" do
+      listener2 = ListenClass.new
+
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
+
+      @evented.do_event
+      sleep(CALLBACK_WAIT)
+      @listener.callback?.should be_true
+      listener2.callback2?.should be_true
+    end
+
+    it "should not call back the wrong method when using multiple classes" do
+      listener2 = ListenClass.new
+
+      @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
+      @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
+
+      @evented.do_event
+      sleep(CALLBACK_WAIT)
+      @listener.callback2?.should_not be_true
+      listener2.callback?.should_not be_true
+    end
+
+    context "and it has return data" do
+
+      it "should return the return values" do
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args)
+        a, b, c = rand(100), rand(100), rand(100)
+        @evented.do_event_with_args(a,b,c)
+        sleep(CALLBACK_WAIT)
+        @listener.callback_with_args?.should == [a,b,c]
+      end
+
+      it "should return a block" do
+        @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_block)
+        block = proc {"a block"}
+        @evented.do_event_with_block(&block)
+        sleep(CALLBACK_WAIT)
+        @listener.callback_with_block?.should == block
+      end
 
       it "should return the return values and a block" do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args_and_block)
@@ -327,19 +328,21 @@ context "when an event is fired" do
 
     end
 
-    it "should not block on callbacks" do
-      # Get a base line on how long a simple method should take
-      bc = BlockingClass.new
-      # Make sure the blocking call doesn't actually block
-      @evented.register_for_event(event: :stuff_happens, listener: bc, callback: :blocking_call)
-      start_time = Time.now
-      @evented.do_event
-      sleep(CALLBACK_WAIT * 2) # Just to make sure the event cycle starts
-      Time.now.should_not > start_time + 1
+    context "when multithreading" do
+      
+      it "should not block on callbacks" do
+        bc = BlockingClass.new
+        @evented.register_for_event(event: :stuff_happens, listener: bc, callback: :blocking_call)
+        start_time = Time.now
+        @evented.do_event
+        sleep(CALLBACK_WAIT * 2) # Just to make sure the event cycle starts
+        Time.now.should_not > start_time + 1
+      end
+
     end
 
   end
-
+  
 end
 
 # Test classes

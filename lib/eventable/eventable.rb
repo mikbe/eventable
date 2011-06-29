@@ -3,24 +3,21 @@ require 'thread'
 # Incredibly simple framework for adding events
 module Eventable
 
-  # Allows for dynamic discovery of hooked callbacks
-  attr_reader :callbacks
-
-  # Add the #event method to the extending class not instances of that class
-  def self.included(base)
-    base.extend(EventableClassMethods)
-  end
-
-  module EventableClassMethods
+  module EventableEventMethods
 
     # register an event
     def event(event_name)
       @eventable_events ||= []
       @eventable_events << event_name unless @eventable_events.include? event_name
     end
+    #alias :event= :event
 
     # returns a list of registered events
     def events
+      #puts super.respond_to?( :events, false )
+      # x = ( self.class.respond_to?(:events,false) ? self.class.events : [] ) << ( @eventable_events ? @eventable_events.clone : [] )
+      # puts x
+      # x
       @eventable_events.clone
     end
 
@@ -30,13 +27,22 @@ module Eventable
     self.class.events
   end
 
+  # Allows for dynamic discovery of hooked callbacks
+  attr_reader :callbacks
+
+  # Add the #event method to the extending class not instances of that class
+  def self.included(base)
+    base.extend(EventableEventMethods)
+  end
+
   def initialize
+    super
+    #include EventableEventMethods
     @eventable_mutex = Mutex.new
   end
 
   # When the event happens the class where it happens runs this
   def fire_event(event, *return_value, &block)
-    # We don't want the callback array being altered when we're trying to read it
     check_mutex
     @eventable_mutex.synchronize {
 
@@ -63,7 +69,7 @@ module Eventable
       raise ArgumentError, "Missing parameter :#{parameter}" unless args[parameter]
     end
 
-    # Make access to the callback cache threadsafe
+    # Make access to the callback array threadsafe
     check_mutex
     @eventable_mutex.synchronize {
       event = args[:event]

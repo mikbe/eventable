@@ -1,0 +1,56 @@
+[1] did some stuff, sleeping
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 824
+firing :other_stuff_happens
+[n/a] same_stuff_happened callback: n/a
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 407
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 841
+firing :other_stuff_happens
+[n/a] same_stuff_happened callback: n/a
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 779
+[1] slept
+[2] did some stuff, sleeping
+firing :other_stuff_happens
+[n/a] same_stuff_happened callback: n/a
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 252
+[2, 316]: do_somestuff
+firing :stuff_happens
+[2] stuff_happened callback: 174
+firing :other_stuff_happens
+[n/a] same_stuff_happened callback: n/a
+[2, 316]: do_somestuff
+firing :stuff_happens
+[2] stuff_happened callback: 193
+[1, 932]: do_somestuff
+firing :stuff_happens
+[1] stuff_happened callback: 535
+[2] slept
+[3] did some stuff, sleeping
+firing :other_stuff_happens
+[n/a] same_stuff_happened callback: n/a
+[2, 316]: do_somestuff
+firing :stuff_happens
+[2] stuff_happened callback: 420
+[3, 748]: do_somestuff
+firing :stuff_happens
+[3] stuff_happened callback: 545
+[2, 316]: do_somestuff
+firing :stuff_happens
+[2] stuff_happened callback: 471
+[3, 748]: do_somestuff
+firing :stuff_happens
+[2, 316]: do_somestuff
+[3] stuff_happened callback: 266
+firing :stuff_happens
+[2] stuff_happened callback: 481
+[3] slept
+all done

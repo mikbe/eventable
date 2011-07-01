@@ -27,7 +27,7 @@ Events and threads do not scale well past a certain point but that's OK; they ar
 ##Usage Instructions##
 
 * Include the module
-* **Important:** If you have an initialize method call `super` as first line (see below). If you don't have an initialize method you don't have to add one. Super is called automatically for you.
+* **Important:** If you have an initialize method `super` must be the first line of that method (see below). If you don't have an initialize method you don't have to add one. Super is called automatically for you.
 * Add an event, e.g. `event :your_event`
 * Fire the event when it should be fired: `fire_event(:your_event)`
 
@@ -137,12 +137,11 @@ This example shows you how you might actually use it in a multi-threaded environ
       end
   
       def stuff_happened(stuff)
-        splat = stuff
-        puts "[#{splat[:parent_id]}] stuff_happened callback: #{splat[:some_value]}"
+        puts "[#{stuff[:parent_id]}] stuff_happened callback: #{stuff[:some_value]}"
       end
   
       def other_stuff_happened
-        puts "[n/a] same_stuff_happened callback: n/a"
+        puts "[n/a] other_stuff_happened callback: n/a"
       end
   
     end
@@ -156,7 +155,9 @@ This example shows you how you might actually use it in a multi-threaded environ
     # or attach to events outside of a listener class
     evented.register_for_event(event: :other_stuff_happens, listener: listener, callback: :other_stuff_happened)
 
+    # Start firing off the events
     evented.start_other_stuff_happening
+    
     (1..3).each do |index|
       listener.do_somestuff(index)
       puts "[#{index}] did some stuff, sleeping"
@@ -169,6 +170,9 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+Post release updates:
+Added running specs to rake tasks (Colin Gemmell)
+
 **2011.06.28**  
 Ver: 0.1.3  
 
@@ -179,13 +183,13 @@ This patches one of the last concurrency issues; if a callback takes a long time
 
 It's your responsiblity to make sure your callback works, as long as it does the callback thread will go out of scope (unless you retain it) and everyone is happy.  
 
-**2011.06.17**
-Ver: 0.1.2
+**2011.06.17**  
+Ver: 0.1.2  
 
 Design updates/fixes:
 
 * Renamed most instance variables to help avoid name collisions.
-* Threadsafe mutex creation. Make sure you call `super` in your class's initialize method!
+* Threadsafe mutex creation. Make sure you call `super` in your class's initialize method! (Robert Klemme)
 
 **2011.06.10**  
 Ver: 0.1.1  
@@ -195,8 +199,8 @@ If events fired specifically returns true and returns false if it can't for what
 
 Fixes:  
 
-* Throws error if event is fired and no listeners are registered (Thanks for bug report Benjamin Yu)
-* Workaround for RubyGems pre 1.8.3 date bug that locks up all of RubyGems (Thanks again Benjamin Yu)
+* Throws error if event is fired and no listeners are registered (Benjamin Yu)
+* Workaround for RubyGems pre 1.8.3 date bug that locks up all of RubyGems (Benjamin Yu)
 
 
 **2011.06.06**  
@@ -210,7 +214,7 @@ Releasing just to stop RubyGems.org from showing last beta instead of newest bet
 
 **2011.06.05**  
 Ver: 0.1.0.beta2  
-Wrapped #\_id2ref call in begin...rescue block.  
+Wrapped #\_id2ref call in begin...rescue block. (Evan Phoenix)
 Added thread synchronization to calls that modify or read callbacks cache.
 
 **2011.06.05**  
@@ -229,4 +233,13 @@ Garbage collection safe:
 
 **2011.06.04**  
 Ver: 0.0.1.alpha  
-Just wrote it as a proof of concept.  
+Just wrote it as a proof of concept. 
+
+
+##Patches/Pull requests##
+
+* Fork the project.
+* Make your feature addition or bug fix (**do not** alter whitespace unless that is a bug!)
+* Add RSpecs for the fix/feature. If you don't have specs I can't add it.
+* Commit your changes. (**do not** change the rakefile, version, or history)
+* Send a pull request. I respond to pull request very, very quickly.

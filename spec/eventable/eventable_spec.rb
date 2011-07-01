@@ -431,4 +431,3 @@ class AnotherListenClass
   end
 end
 
-

@@ -12,10 +12,5 @@ end
 
 # Add running specs to the gem tasks
 [:build, :install, :release].each do |task_name|
-  bundler_task = Rake::Task[task_name]
-  task "bundler_#{task_name}" do
-    bundler_task
-  end
-  task task_name => [:spec, "bundler_#{task_name}"]
+  task task_name => :spec
 end
-

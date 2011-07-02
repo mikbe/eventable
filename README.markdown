@@ -170,8 +170,9 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
-Post release updates:
-Added running specs to rake tasks (Colin Gemmell)
+Post release updates:  
+
+* Added running specs to rake tasks (Colin Gemmell)
 
 **2011.06.28**  
 Ver: 0.1.3  
@@ -195,7 +196,8 @@ Design updates/fixes:
 Ver: 0.1.1  
 
 Features:  
-If events fired specifically returns true and returns false if it can't for whatever reason (e.g. no listeners registered).
+
+* If events fired specifically returns true and returns false if it can't for whatever reason (e.g. no listeners registered).
 
 Fixes:  
 
@@ -214,8 +216,9 @@ Releasing just to stop RubyGems.org from showing last beta instead of newest bet
 
 **2011.06.05**  
 Ver: 0.1.0.beta2  
-Wrapped #\_id2ref call in begin...rescue block. (Evan Phoenix)
-Added thread synchronization to calls that modify or read callbacks cache.
+
+* Wrapped #\_id2ref call in begin...rescue block. (Evan Phoenix)
+* Added thread synchronization to calls that modify or read callbacks cache.
 
 **2011.06.05**  
 Ver: 0.1.0.beta1  

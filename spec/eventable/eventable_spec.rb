@@ -10,7 +10,7 @@ describe Eventable do
     @listener = ListenClass.new
   end
 
-  context "when inheriting eventable" do
+  context "when mixing in Eventable" do
 
     it "should not raise an error if class has no initialize method" do
       lambda{
@@ -48,6 +48,51 @@ describe Eventable do
         f = Foo.new
         f.fire_event(:do_stuff)
       }.should raise_error(Eventable::Errors::SuperNotCalledInInitialize)
+    end
+
+    context "and the class inherites from a class with initialization parameters" do
+
+      it "should not raise an error if they are optional and not given" do
+        class Baz
+          def initialize(attributes = nil, options = {})
+          end
+        end
+
+        class Qiz < Baz
+          include Eventable
+        end
+
+        expect{q = Qiz.new}.should_not raise_error
+      end
+
+      it "should not raise an error if they are required and given" do
+        class Baz2
+          def initialize(attributes)
+          end
+        end
+
+        class Qiz2 < Baz2
+          include Eventable
+        end
+        expect{q = Qiz2.new('blah')}.should_not raise_error
+      end
+
+      it "should pass along blocks if given" do
+        class Baz3
+          def initialize(attributes = nil, &block)
+            yield if block_given?
+          end
+        end
+
+        class Qiz3 < Baz3
+          include Eventable
+        end
+        random_value = rand(9999999999)
+        Qiz3.new() { @cheesy = random_value } 
+        @cheesy.should == random_value 
+        remove_instance_variable :@cheesy
+      end
+
     end
 
   end

@@ -30,7 +30,7 @@ module Eventable
     base.extend(EventableEventMethods)
   end
 
-  def initialize
+  def initialize(*args)
     super
     @eventable_mutex = Mutex.new
   end

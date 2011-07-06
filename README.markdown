@@ -170,9 +170,16 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
-Post release updates:  
+**2011.07.05**
+Ver: 0.1.4
+
+Updates:
 
 * Added running specs to rake tasks (Colin Gemmell)
+
+Bug fixes:
+
+* Did not accept initialization parameters so caused errors if your class inherited from another class that needed them. (Paul Strong)
 
 **2011.06.28**  
 Ver: 0.1.3  

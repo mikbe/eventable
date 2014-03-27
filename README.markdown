@@ -170,6 +170,13 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+**2014.03.26**
+Ver: 0.2.0
+
+Updates:
+
+Updating for Ruby 2.x
+
 **2011.07.05**
 Ver: 0.1.4
 

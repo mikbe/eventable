@@ -46,7 +46,7 @@ module Eventable
         begin
           listener = ObjectSpace._id2ref(listener_id)
           callbacks.each do |callback|
-            Thread.new {listener.send callback, *return_value, &block}
+            listener.send callback, *return_value, &block
           end
         rescue RangeError => re
           # Don't bubble up a missing recycled object, I don't care if it's not there, I just won't call it

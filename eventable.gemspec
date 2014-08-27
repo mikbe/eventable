@@ -1,8 +1,5 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-# Kludge for older RubyGems not handling unparsable dates gracefully 
-# (psych 1.2.0 gem wouldn't build on test system so we're stuck with syck)
-YAML::ENGINE.yamler = 'syck'
 
 require "rubygems"
 require "eventable/version"

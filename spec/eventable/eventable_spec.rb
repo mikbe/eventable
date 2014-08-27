@@ -1,8 +1,5 @@
 require 'spec_helper'
 
-# Callbacks are threaded to avoid blocking so tests need to wait for the callback to be scheduled and run
-CALLBACK_WAIT = 0.01
-
 describe Eventable do
 
   before(:each) do
@@ -88,8 +85,8 @@ describe Eventable do
           include Eventable
         end
         random_value = rand(9999999999)
-        Qiz3.new() { @cheesy = random_value } 
-        @cheesy.should == random_value 
+        Qiz3.new() { @cheesy = random_value }
+        @cheesy.should == random_value
         remove_instance_variable :@cheesy
       end
 
@@ -149,19 +146,19 @@ describe Eventable do
 
       # these tests could be refactored into one...
       it "should raise an error if the event is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(listener: @listener, callback: :callback)
         }.should raise_error(ArgumentError)
       end
 
       it "should raise an error if the listener is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(event: :do_something, callback: :callback)
         }.should raise_error(ArgumentError)
       end
 
       it "should raise an error if the callback is not specified" do
-        lambda{ 
+        lambda{
           @evented.register_for_event(event: :do_something, listener: @listener)
         }.should raise_error(ArgumentError)
       end
@@ -170,13 +167,13 @@ describe Eventable do
 
     it "should raise an error if the event doesn't exist" do
       foo = Class.new
-      lambda{ 
+      lambda{
         @evented.register_for_event(event: :nonexistent, listener: foo, callback: :bar)
       }.should raise_error(Eventable::Errors::UnknownEvent)
     end
 
     it "should not raise an error when registering for events that do exist" do
-      lambda{ 
+      lambda{
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       }.should_not raise_error
     end
@@ -184,13 +181,13 @@ describe Eventable do
     it "should allow multiple callbacks to the same method from different events" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.register_for_event(event: :other_stuff_happens, listener: @listener, callback: :callback)
-      @evented.callbacks.count.should == 2 
+      @evented.callbacks.count.should == 2
     end
 
     it "should not add a callback that's already been added" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-      @evented.callbacks[:stuff_happens].count.should == 1 
+      @evented.callbacks[:stuff_happens].count.should == 1
     end
 
     it "should allow multiple instances of the same class to register the same callback for the same event" do
@@ -204,7 +201,6 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback2)
       @evented.do_event
-      sleep(CALLBACK_WAIT)
       @listener.callback?.should be_true
       @listener.callback2?.should be_true
     end
@@ -213,7 +209,6 @@ describe Eventable do
       # should be a no brainer because a class is an object too, but just to be sure
       @evented.register_for_event(event: :stuff_happens, listener: ListenClass, callback: :class_callback)
       @evented.do_event
-      sleep(CALLBACK_WAIT)
       ListenClass.class_callback?.should be_true
     end
 
@@ -227,7 +222,6 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
         another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback)
         @evented.do_event
-        sleep(CALLBACK_WAIT)
         @listener.callback?.should be_true
         another_listener.callback?.should_not be_true
       end
@@ -239,7 +233,6 @@ describe Eventable do
         another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback2)
         @evented.do_event
         another_evented.do_event
-        sleep(CALLBACK_WAIT)
         @listener.callback?.should be_true
         another_listener.callback2?.should be_true
       end
@@ -277,7 +270,7 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: listener, callback: :callback)
       end
       GC.start
-      @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id) 
+      @evented.callbacks[:stuff_happens].keys.should_not include(listener_object_id)
     end
 
   end
@@ -302,7 +295,6 @@ describe Eventable do
     it "should call back the specified method when the event is fired" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.do_event
-      sleep(CALLBACK_WAIT)
       @listener.callback?.should be_true
     end
 
@@ -319,7 +311,6 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
 
       @evented.do_event
-      sleep(CALLBACK_WAIT)
       @listener.callback?.should be_true
       listener2.callback2?.should be_true
     end
@@ -331,7 +322,6 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: listener2, callback: :callback2)
 
       @evented.do_event
-      sleep(CALLBACK_WAIT)
       @listener.callback2?.should_not be_true
       listener2.callback?.should_not be_true
     end
@@ -342,7 +332,6 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args)
         a, b, c = rand(100), rand(100), rand(100)
         @evented.do_event_with_args(a,b,c)
-        sleep(CALLBACK_WAIT)
         @listener.callback_with_args?.should == [a,b,c]
       end
 
@@ -350,7 +339,6 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_block)
         block = proc {"a block"}
         @evented.do_event_with_block(&block)
-        sleep(CALLBACK_WAIT)
         @listener.callback_with_block?.should == block
       end
 
@@ -358,41 +346,14 @@ describe Eventable do
         @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback_with_args_and_block)
         a, b, c, block = rand(100), rand(100), rand(100), proc {"a block"}
         @evented.do_event_with_args_and_block(a,b,c,&block)
-        sleep(CALLBACK_WAIT)
         @listener.callback_with_args_and_block?.should == [a,b,c,block]
       end
 
     end
-
-    context "when multithreading" do
-
-      it "should not block on callbacks" do
-        bc = BlockingClass.new
-        @evented.register_for_event(event: :stuff_happens, listener: bc, callback: :blocking_call)
-        start_time = Time.now
-        @evented.do_event
-        sleep(CALLBACK_WAIT * 2) # Just to make sure the event cycle starts
-        Time.now.should_not > start_time + 1
-      end
-
-    end
-
   end
-
 end
 
 # Test classes
-
-class BlockingClass
-  def blocking_call
-    # I don't know how long this will take but it's a lot longer than 1 second
-    1000000000.times { Math.sqrt(98979872938749283749729384792734927) }
-    non_blocking_call
-  end
-  def non_blocking_call
-    "all done"
-  end
-end
 
 class EventClass
   include Eventable

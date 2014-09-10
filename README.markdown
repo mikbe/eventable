@@ -170,6 +170,13 @@ This example shows you how you might actually use it in a multi-threaded environ
 
 ##Version History##
 
+**2014.09.10**
+Ver: 0.2.1
+
+* Verified to work with Ruby 2.1  
+* Updated specs to RSpec 2.99  
+* Updated dependencies and author links.
+
 **2014.03.26**
 Ver: 0.2.0
 

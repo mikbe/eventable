@@ -62,7 +62,7 @@ describe Eventable do
           include Eventable
         end
 
-        expect{q = Qiz.new}.should_not raise_error
+        expect{q = Qiz.new}.not_to raise_error
       end
 
       it "should not raise an error if they are required and given" do
@@ -74,7 +74,7 @@ describe Eventable do
         class Qiz2 < Baz2
           include Eventable
         end
-        expect{q = Qiz2.new('blah')}.should_not raise_error
+        expect{q = Qiz2.new('blah')}.not_to raise_error
       end
 
       it "should pass along blocks if given" do
@@ -205,8 +205,8 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback2)
       @evented.do_event
       sleep(CALLBACK_WAIT)
-      @listener.callback?.should be_true
-      @listener.callback2?.should be_true
+      @listener.callback?.should be true
+      @listener.callback2?.should be true
     end
 
     it "should allow callbacks to class methods" do
@@ -214,7 +214,7 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: ListenClass, callback: :class_callback)
       @evented.do_event
       sleep(CALLBACK_WAIT)
-      ListenClass.class_callback?.should be_true
+      ListenClass.class_callback?.should be true
     end
 
     context "when multiple classes mixin eventable" do
@@ -228,8 +228,8 @@ describe Eventable do
         another_evented.register_for_event(event: :stuff_happens, listener: another_listener, callback: :callback)
         @evented.do_event
         sleep(CALLBACK_WAIT)
-        @listener.callback?.should be_true
-        another_listener.callback?.should_not be_true
+        @listener.callback?.should be true
+        another_listener.callback?.should_not be true
       end
 
       it "should not call the wrong class when both evented classes fire events" do
@@ -240,8 +240,8 @@ describe Eventable do
         @evented.do_event
         another_evented.do_event
         sleep(CALLBACK_WAIT)
-        @listener.callback?.should be_true
-        another_listener.callback2?.should be_true
+        @listener.callback?.should be true
+        another_listener.callback2?.should be true
       end
 
     end
@@ -266,7 +266,7 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.unregister_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.do_event
-      @listener.callback?.should_not be_true
+      @listener.callback?.should_not be true
     end
 
     it "should automatically remove callbacks to objects that are garbage collected" do
@@ -286,12 +286,12 @@ describe Eventable do
 
     it "should return false if the event did not fire" do
       @evented.do_event
-      @evented.do_event.should be_false
+      @evented.do_event.should be false
     end
 
     it "should return true if the event did fire" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
-      @evented.do_event.should be_true
+      @evented.do_event.should be true
     end
 
     it "should not throw an error if no listeners have been registered for an event" do
@@ -303,13 +303,13 @@ describe Eventable do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.do_event
       sleep(CALLBACK_WAIT)
-      @listener.callback?.should be_true
+      @listener.callback?.should be true
     end
 
     it "should not call back the wrong method when the event is fired" do
       @evented.register_for_event(event: :stuff_happens, listener: @listener, callback: :callback)
       @evented.do_event
-      @listener.callback2?.should_not be_true
+      @listener.callback2?.should_not be true
     end
 
     it "should call back more than one class" do
@@ -320,8 +320,8 @@ describe Eventable do
 
       @evented.do_event
       sleep(CALLBACK_WAIT)
-      @listener.callback?.should be_true
-      listener2.callback2?.should be_true
+      @listener.callback?.should be true
+      listener2.callback2?.should be true
     end
 
     it "should not call back the wrong method when using multiple classes" do
@@ -332,8 +332,8 @@ describe Eventable do
 
       @evented.do_event
       sleep(CALLBACK_WAIT)
-      @listener.callback2?.should_not be_true
-      listener2.callback?.should_not be_true
+      @listener.callback2?.should_not be true
+      listener2.callback?.should_not be true
     end
 
     context "and it has return data" do

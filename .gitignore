@@ -1,5 +1,5 @@
 *.gem
-example
+/example
 .bundle
 Gemfile.lock
 pkg/*
